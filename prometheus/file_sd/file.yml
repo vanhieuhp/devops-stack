@@ -1,0 +1,4 @@
+- targets:
+  - 192.111.33.111:9100
+  labels:
+    team: "Team Alpha"

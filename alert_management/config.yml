@@ -1,0 +1,24 @@
+global:
+  # the smarthost and SMTP sender used for mail notifications.
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: 'hieu.nguyenvan.dev10@gmail.com'
+  # SMTP authentication credentials
+  smtp_auth_username: 'hieu.nguyenvan.dev10@gmail.com'
+  smtp_auth_password: 'talwzhajdiwhmuwu'
+
+route:
+  receiver: 'main_receiver'
+
+  routes:
+  - receiver: 'urgent_receiver'
+    matchers:
+      - severity="Critical"
+
+receivers:
+- name: 'main_receiver'
+  email_configs:
+  - to: 'vanhieuit10@gmail.com'
+
+- name: 'urgent_receiver'
+  email_configs:
+  - to: 'vanhieuit10@gmail.com'

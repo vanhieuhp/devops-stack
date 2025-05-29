@@ -1,0 +1,12 @@
+groups:
+  - name: alert
+    rules:
+    - alert: Is Node Exporter up?
+      expr: up{job="node_exporter"} == 0
+      for: 1s
+      labels:
+        team: Team Alpha
+        severity: Critical
+      annotations:
+        summary: "{{ $labels.instance }} Is Down"
+        description: "Team Alpha has to restart the server {{ $labels }} VALUE: {{ $value }}."
