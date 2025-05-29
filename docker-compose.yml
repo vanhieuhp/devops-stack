@@ -1,0 +1,64 @@
+version: "3.8"
+
+services:
+  prometheus:
+    image: prom/prometheus:v3.4.0
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/rules:/etc/prometheus/rules
+      - ./prometheus/files_sd:/etc/prometheus/files_sd
+      - ./prometheus/web.yml:/etc/prometheus/web.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.config.file=/etc/prometheus/web.yml'
+    restart: unless-stopped
+    networks:
+      - external_network
+
+  node_exporter:
+    image: prom/node-exporter:v1.9.1
+    container_name: node_exporter
+    ports:
+      - 9100:9100
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+      - /:/host:ro,rslave
+    command:
+      - '--path.rootfs=/host'
+      - '--path.procfs=/host/proc' 
+      - '--path.sysfs=/host/sys'
+      - --collector.filesystem.ignored-mount-points
+      - "^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)"
+    restart: unless-stopped
+    networks:
+      - external_network
+
+  shoehub:
+    image: aussiearef/shoehub:latest
+    container_name: shoehub
+    ports:
+      - 8080:8080
+    environment:
+      - JAVA_OPTS=-Xmx512m
+    restart: unless-stopped
+    networks:
+      - external_network
+
+networks:
+  external_network:
+    name: external_network
+    external: true
+
+
+volumes:
+  prometheus_data: {}
+  grafana_data: {}

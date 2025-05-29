@@ -1,0 +1,68 @@
+Vagrant.configure("2") do |config|
+
+  # Prometheus VM
+  config.vm.define "prometheus" do |prometheus|
+    prometheus.vm.box = "ubuntu/jammy64"
+    prometheus.vm.hostname = "prometheus"
+    prometheus.vm.network "public_network",
+      ip: "192.168.1.201",
+      bridge: "wlp2s0"
+
+    prometheus.vm.provider "virtualbox" do |vb|
+      vb.name = "Ubuntu-Prometheus"
+      vb.memory = "2048"
+      vb.cpus = 1
+    end
+
+    prometheus.vm.provision "shell", inline: <<-SHELL
+      sudo apt-get update
+      sudo apt-get upgrade -y
+    SHELL
+  end
+
+  # Dev VM
+  config.vm.define "exporter" do |dev|
+    dev.vm.box = "ubuntu/jammy64"
+    dev.vm.hostname = "exporter"
+    dev.vm.network "public_network",
+      ip: "192.168.1.202",   # ← Different IP!
+      bridge: "wlp2s0"
+
+    dev.vm.provider "virtualbox" do |vb|
+      vb.name = "Ubuntu-Exporter"
+      vb.memory = "2048"
+      vb.cpus = 1
+    end
+
+    dev.vm.provision "shell", inline: <<-SHELL
+      sudo apt-get update
+      sudo apt-get upgrade -y
+    SHELL
+  end
+
+  config.vm.define "grafana" do |grafana|
+    grafana.vm.box = "ubuntu/jammy64"
+    grafana.vm.hostname = "grafana"
+    grafana.vm.network "public_network",
+      ip: "192.168.1.203",
+      bridge: "wlp2s0"
+
+    grafana.vm.provider "virtualbox" do |vb|
+      vb.name = "Ubuntu-Grafana"
+      vb.memory = "2048"
+      vb.cpus = 1
+    end
+
+    # grafana.vm.provision "shell", inline: <<-SHELL
+    #   sudo apt-get update
+    #   sudo apt-get install -y apt-transport-https software-properties-common wget
+    #   wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add -
+    #   echo "deb https://packages.grafana.com/oss/deb stable main" | sudo tee /etc/apt/sources.list.d/grafana.list
+    #   sudo apt-get update
+    #   sudo apt-get install -y grafana
+    #   sudo systemctl enable grafana-server
+    #   sudo systemctl start grafana-server
+    # SHELL
+  end
+
+end

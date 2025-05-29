@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  grafana:
+    image: grafana/grafana:12.0.1
+    container_name: grafana
+    hostname: grafana
+    ports:
+      - 3000:3000
+    volumes:
+      - grafana_data:/var/lib/grafana
+      # - ./grafana/provisioning/:/etc/grafana/provisioning/
+    # env_file:
+    #   - ./grafana/config.monitoring
+    restart: always
+    networks:
+      - external_network
+
+networks:
+  external_network:
+    name: external_network
+    external: true
+
+
+volumes:
+  grafana_data: {}
