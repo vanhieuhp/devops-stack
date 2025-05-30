@@ -1,4 +1,4 @@
-version: "3.8"
+name: "monitoring"
 
 services:
   prometheus:
@@ -31,9 +31,8 @@ services:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
       - /:/rootfs:ro
-      - /:/host:ro,rslave
     command:
-      - '--path.rootfs=/host'
+      - '--path.rootfs=/rootfs'
       - '--path.procfs=/host/proc' 
       - '--path.sysfs=/host/sys'
       - --collector.filesystem.ignored-mount-points
@@ -52,6 +51,51 @@ services:
     restart: unless-stopped
     networks:
       - external_network
+
+  grafana:
+    image: grafana/grafana:12.0.1
+    container_name: grafana
+    hostname: grafana
+    ports:
+      - 3000:3000
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini
+      # - ./grafana/provisioning/:/etc/grafana/provisioning/
+    # env_file:
+    #   - ./grafana/config.monitoring
+    restart: always
+    networks:
+      - external_network
+  
+  loki:
+    image: grafana/loki:3.5
+    container_name: loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki/loki-config.yaml:/etc/loki/loki-config.yaml
+    command: -config.file=/etc/loki/loki-config.yaml
+    restart: unless-stopped
+    networks:
+      - external_network
+
+  promtail:
+    image: grafana/promtail:3.5-amd64
+    container_name: promtail
+    volumes:
+      - ./promtail/promtail-config.yaml:/etc/promtail/config.yml
+      - ./log:/var/log
+    command: -config.file=/etc/promtail/config.yml
+    # healthcheck:
+    #   test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9080/ready"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 3
+    restart: unless-stopped
+    networks:
+      - external_network
+
 
 networks:
   external_network:
