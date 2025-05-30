@@ -24,7 +24,7 @@
     {
       "datasource": {
         "type": "loki",
-        "uid": "fencipn8b95ogd"
+        "uid": "deneyivl7ckxsb"
       },
       "fieldConfig": {
         "defaults": {
@@ -151,7 +151,7 @@
         {
           "datasource": {
             "type": "loki",
-            "uid": "fencipn8b95ogd"
+            "uid": "deneyivl7ckxsb"
           },
           "direction": "backward",
           "editorMode": "code",
@@ -163,7 +163,7 @@
         {
           "datasource": {
             "type": "loki",
-            "uid": "fencipn8b95ogd"
+            "uid": "deneyivl7ckxsb"
           },
           "direction": "backward",
           "editorMode": "code",
@@ -180,7 +180,7 @@
     {
       "datasource": {
         "type": "loki",
-        "uid": "fencipn8b95ogd"
+        "uid": "deneyivl7ckxsb"
       },
       "fieldConfig": {
         "defaults": {
@@ -264,7 +264,7 @@
         {
           "datasource": {
             "type": "loki",
-            "uid": "fencipn8b95ogd"
+            "uid": "deneyivl7ckxsb"
           },
           "direction": "backward",
           "editorMode": "code",
@@ -276,7 +276,7 @@
         {
           "datasource": {
             "type": "loki",
-            "uid": "fencipn8b95ogd"
+            "uid": "deneyivl7ckxsb"
           },
           "direction": "backward",
           "editorMode": "code",

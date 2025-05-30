@@ -30,7 +30,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "denc8pqlupczkb"
+        "uid": "beneyhode3bpca"
       },
       "fieldConfig": {
         "defaults": {
@@ -126,7 +126,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "denc8pqlupczkb"
+        "uid": "beneyhode3bpca"
       },
       "fieldConfig": {
         "defaults": {
@@ -219,7 +219,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "denc8pqlupczkb"
+            "uid": "beneyhode3bpca"
           },
           "disableTextWrap": false,
           "editorMode": "code",
@@ -236,7 +236,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "denc8pqlupczkb"
+            "uid": "beneyhode3bpca"
           },
           "editorMode": "code",
           "expr": "rate(shoehub_sales{ShoeType=\"Loafers\"}[1m])",
@@ -265,7 +265,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "denc8pqlupczkb"
+        "uid": "beneyhode3bpca"
       },
       "fieldConfig": {
         "defaults": {
@@ -357,7 +357,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "denc8pqlupczkb"
+            "uid": "beneyhode3bpca"
           },
           "editorMode": "code",
           "expr": "rate(shoehub_sales{ShoeType=\"Loafers\"}[$__rate_interval] offset 2m) ",
@@ -374,7 +374,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "denc8pqlupczkb"
+        "uid": "beneyhode3bpca"
       },
       "fieldConfig": {
         "defaults": {
@@ -439,7 +439,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "denc8pqlupczkb"
+            "uid": "beneyhode3bpca"
           },
           "editorMode": "code",
           "expr": "rate(shoehub_payments{CountryCode=\"IN\", PaymentMethod=\"Card\"}[$__rate_interval])",
@@ -452,7 +452,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "denc8pqlupczkb"
+            "uid": "beneyhode3bpca"
           },
           "editorMode": "code",
           "expr": "rate(shoehub_payments{CountryCode=\"US\", PaymentMethod=\"Card\"}[$__rate_interval])",
@@ -469,7 +469,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "denc8pqlupczkb"
+        "uid": "beneyhode3bpca"
       },
       "fieldConfig": {
         "defaults": {
@@ -568,7 +568,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "denc8pqlupczkb"
+        "uid": "beneyhode3bpca"
       },
       "fieldConfig": {
         "defaults": {
@@ -659,7 +659,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "denc8pqlupczkb"
+            "uid": "beneyhode3bpca"
           },
           "editorMode": "code",
           "expr": "sum(shoehub_payments{CountryCode=\"$country\", PaymentMethod=\"Paypal\"}) / sum(shoehub_payments{CountryCode=\"$country\"}) * 100",
@@ -672,7 +672,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "denc8pqlupczkb"
+            "uid": "beneyhode3bpca"
           },
           "editorMode": "code",
           "expr": "sum(shoehub_payments{CountryCode=\"$country\", PaymentMethod=\"Cash\"}) / sum(shoehub_payments{CountryCode=\"$country\"}) * 100",

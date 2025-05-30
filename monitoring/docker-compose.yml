@@ -62,8 +62,9 @@ services:
       - grafana_data:/var/lib/grafana
       - ./grafana/grafana.ini:/etc/grafana/grafana.ini
       # - ./grafana/provisioning/:/etc/grafana/provisioning/
-    # env_file:
-    #   - ./grafana/config.monitoring
+    env_file:
+      - ./grafana/.grafana.env
+    command: --config=/etc/grafana/grafana.ini
     restart: always
     networks:
       - external_network
@@ -99,7 +100,7 @@ services:
 
 networks:
   external_network:
-    name: external_network
+    name: docker_network
     external: true
 
 
