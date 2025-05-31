@@ -1,0 +1,276 @@
+---
+# This playbook automates the setup of a Kubernetes cluster using kubeadm
+# It includes both master and worker node configurations
+
+- name: Setup Kubernetes Prerequisites
+  hosts: all # Run on all nodes (both master and workers)
+  become: true # Use sudo privileges
+  tags:
+  - prerequisites
+  - setup
+  tasks:
+  # Update and upgrade system packages
+  - name: Update apt cache and upgrade packages
+    apt:
+      update_cache: yes
+      upgrade: yes
+    tags:
+    - system-packages
+    - update
+
+  # Install required system packages
+  - name: Install prerequisite packages
+    apt:
+      name:
+      - curl
+      - gnupg2
+      - software-properties-common
+      - apt-transport-https
+      - ca-certificates
+      state: present
+    tags:
+    - system-packages
+
+  # Disable swap (Kubernetes requirement)
+  - name: Disable swap
+    command: swapoff -a
+    tags:
+    - swap
+    - kernel
+
+  - name: Remove swap from fstab
+    replace:
+      path: /etc/fstab
+      regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
+      replace: '# \1'
+    tags:
+    - swap
+    - kernel
+
+  # Load required kernel modules
+  - name: Configure kernel modules for containerd
+    copy:
+      dest: /etc/modules-load.d/containerd.conf
+      content: |
+        overlay
+        br_netfilter
+    tags:
+    - kernel
+    - containerd
+
+  - name: Load kernel modules
+    modprobe:
+      name: "{{ item }}"
+      state: present
+    loop:
+    - overlay
+    - br_netfilter
+    tags:
+    - kernel
+    - containerd
+
+  # Configure kernel parameters
+  - name: Set kernel parameters for Kubernetes
+    sysctl:
+      name: "{{ item.key }}"
+      value: "{{ item.value }}"
+      state: present
+      sysctl_file: /etc/sysctl.d/kubernetes.conf
+    loop:
+    - { key: "net.bridge.bridge-nf-call-ip6tables", value: "1" }
+    - { key: "net.bridge.bridge-nf-call-iptables", value: "1" }
+    - { key: "net.ipv4.ip_forward", value: "1" }
+    tags:
+    - kernel
+    - network
+
+  # Install containerd
+  - name: Add Docker GPG key
+    apt_key:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      state: present
+    tags:
+    - containerd
+    - docker
+
+  - name: Add Docker repository
+    apt_repository:
+      repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+      state: present
+    tags:
+    - containerd
+    - docker
+
+  - name: Install containerd
+    apt:
+      name: containerd.io
+      state: present
+      update_cache: yes
+    tags:
+    - containerd
+    - docker
+
+  # Configure containerd
+  - name: Create containerd config directory
+    file:
+      path: /etc/containerd
+      state: directory
+    tags:
+    - containerd
+    - config
+
+  - name: Configure containerd
+    shell: |
+      containerd config default | tee /etc/containerd/config.toml
+      sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
+    tags:
+    - containerd
+    - config
+
+  - name: Restart and enable containerd
+    systemd:
+      name: containerd
+      state: restarted
+      enabled: yes
+    tags:
+    - containerd
+    - service
+
+  # Install Kubernetes components
+  - name: Check if the kubernetes signing key file exists
+    stat:
+      path: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    register: k8s_gpg_key_check
+
+  - name: Download the public signing key for the Kubernetes package repositories
+    shell: curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    when: not k8s_gpg_key_check.stat.exists
+
+  - name: Add repository for kubernetes 1.30 to Apt sources
+    ansible.builtin.lineinfile:
+      path: /etc/apt/sources.list.d/kubernetes.list
+      line: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /"
+      state: present
+      create: yes
+    become: true
+
+  - name: Install packages needed to use the Kubernetes apt repository
+    apt:
+      update_cache: true
+      name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    become: true
+
+  - name: Prevent kubernetes being upgraded
+    shell: apt-mark hold kubelet kubeadm kubectl
+    become: true
+
+- name: Initialize Kubernetes Master
+  hosts: k8s_master # Run only on master node
+  become: true
+  vars:
+    k8s_master_ip: "{{ lookup('ini', 'K8S_MASTER_IP type=properties file=.env') }}"
+  tags:
+  - master
+  - setup
+  tasks:
+  # Reset any previous Kubernetes configuration
+  - name: Reset kubeadm
+    command: kubeadm reset -f
+    tags:
+    - master
+    - reset
+
+  - name: Remove etcd data
+    file:
+      path: /var/lib/etcd
+      state: absent
+    tags:
+    - master
+    - reset
+
+  - name: Remove kubernetes manifests
+    file:
+      path: /etc/kubernetes/manifests
+      state: absent
+    tags:
+    - master
+    - reset
+
+  # Initialize the control plane
+  - name: Initialize Kubernetes cluster
+    command: >
+      kubeadm init --apiserver-advertise-address={{ k8s_master_ip }} --pod-network-cidr=10.244.0.0/16
+    register: kubeadm_init
+    tags:
+    - master
+    - init
+
+  # Configure kubectl for the user
+  - name: Create .kube directory
+    file:
+      path: "/home/{{ ansible_user }}/.kube"
+      state: directory
+      owner: "{{ ansible_user }}"
+      group: "{{ ansible_user }}"
+    tags:
+    - master
+    - config
+
+  - name: Copy admin.conf to user's kube config
+    copy:
+      src: /etc/kubernetes/admin.conf
+      dest: "/home/{{ ansible_user }}/.kube/config"
+      remote_src: yes
+      owner: "{{ ansible_user }}"
+      group: "{{ ansible_user }}"
+    tags:
+    - master
+    - config
+
+  # Install Calico network plugin
+  - name: Install Calico CNI
+    command: kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/calico.yaml
+    become: false # Run as normal user
+    tags:
+    - master
+    - network
+    - cni
+
+  # Get join command for worker nodes
+  - name: Get kubeadm join command with dynamic API server IP
+    shell: |
+      kubeadm token create --print-join-command | \
+      sed "s|kubeadm join [0-9.]*:[0-9]*|kubeadm join {{ k8s_master_ip }}:6443|"
+    register: join_command
+    changed_when: false
+    delegate_to: "{{ groups['k8s_master'][0] }}"
+    run_once: true
+    environment:
+      KUBECONFIG: /etc/kubernetes/admin.conf
+    tags:
+    - master
+    - token
+
+  # Save join command for worker nodes
+  - name: Store join command
+    set_fact:
+      join_command: "{{ hostvars[groups['k8s_master'][0]]['join_command'].stdout }}"
+    tags:
+    - master
+    - token
+
+- name: Join Worker Nodes
+  hosts: k8s_workers
+  become: true
+  tasks:
+  - name: Join cluster
+    command: "{{ hostvars[groups['k8s_master'][0]]['join_command'] }}"
+    register: join_worker
+    args:
+      creates: /etc/kubernetes/kubelet.conf
+    tags:
+    - workers
+    - join
