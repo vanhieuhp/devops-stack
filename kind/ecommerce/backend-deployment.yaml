@@ -23,7 +23,7 @@ spec:
       namespace: ecommerce
     spec:
       containers:
-      - image: ecommerce/backend:v2
+      - image: 920373006757.dkr.ecr.ap-southeast-1.amazonaws.com/dev/aeh/backend:v2
         imagePullPolicy: IfNotPresent
         name: ecommerce-backend
         ports:
@@ -38,6 +38,8 @@ spec:
       - name: application-properties
         configMap:
           name: ecommerce-backend-application-properties-configmap
+      imagePullSecrets:
+      - name: ecr-registry-secret
 ---
 apiVersion: v1
 kind: Service

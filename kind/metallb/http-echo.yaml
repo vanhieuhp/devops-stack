@@ -35,7 +35,7 @@ metadata:
   name: echo
   namespace: echo
   annotations:
-    metallb.universe.tf/address-pool: demo-pool
+    metallb.universe.tf/address-pool: default
 spec:
   ports:
     - name: http
