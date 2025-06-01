@@ -1,0 +1,14 @@
+Host master
+    HostName 192.111.33.201
+    User vagrant
+    IdentityFile ~/.ssh/id_ed25519  # or your private key path
+
+Host worker1
+    HostName 192.111.33.202
+    User vagrant
+    IdentityFile ~/.ssh/id_ed25519  # or your private key path
+
+Host worker2
+    HostName 192.111.33.203
+    User vagrant
+    IdentityFile ~/.ssh/id_ed25519  # or your private key path

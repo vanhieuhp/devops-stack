@@ -30,16 +30,26 @@ spec:
         - containerPort: 8080
           name: tcp
           protocol: TCP
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+          limits:
+            cpu: "1000m"
+            memory: "1024Mi"
         volumeMounts:
         - name: application-properties
           mountPath: "/run/config/application.properties"
           subPath: "application.properties"
+        envFrom:
+        - secretRef:
+            name: ecommerce-backend-database-connection
       volumes:
       - name: application-properties
         configMap:
           name: ecommerce-backend-application-properties-configmap
       imagePullSecrets:
-      - name: ecr-registry-secret
+      - name: ecr-secret
 ---
 apiVersion: v1
 kind: Service

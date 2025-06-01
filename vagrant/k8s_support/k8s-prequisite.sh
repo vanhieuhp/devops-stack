@@ -45,11 +45,14 @@ sudo systemctl restart containerd
 sudo systemctl enable containerd
 
 # Add Kubernetes repository and GPG key
-echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /" | sudo tee /etc/apt/sources.list.d/kubernetes.list
-curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 
 # Install Kubernetes components (kubelet, kubeadm, kubectl)
 sudo apt update -y
 sudo apt install -y kubelet kubeadm kubectl
 # Prevent automatic updates to Kubernetes components
 sudo apt-mark hold kubelet kubeadm kubectl
+sudo apt-mark unhold kubelet kubeadm kubectl
+
+sudo apt install -y kubelet=1.32.0-1.1 kubeadm=1.32.0-1.1 kubectl=1.32.0-1.1

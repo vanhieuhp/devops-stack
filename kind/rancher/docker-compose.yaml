@@ -1,18 +1,18 @@
-version: '3.8'
+name: 'rancher'
 
 services:
   rancher:
-    image: rancher/rancher:latest
+    image: rancher/rancher:v2.11.1
     container_name: rancher
     restart: unless-stopped
     ports:
-      - "10080:80"
-      - "10443:443"
+      - "80:80"
+      - "443:443"
     volumes:
-      - rancher-data:/var/lib/rancher
+      - rancher_data:/var/lib/rancher
     # environment:
     #   - CATTLE_BOOTSTRAP_PASSWORD=admin
     privileged: true
 
 volumes:
-  rancher-data:
+  rancher_data:
