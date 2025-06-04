@@ -1,14 +1,14 @@
 all:
   hosts:
     k8s_master:
-      ansible_host: 192.111.33.201
-      ansible_user: vagrant
+      ansible_host: 192.168.1.201
+      ansible_user: hieunv
     worker1:
-      ansible_host: 192.111.33.202
-      ansible_user: vagrant
+      ansible_host: 192.168.1.202
+      ansible_user: hieunv
     worker2:
-      ansible_host: 192.111.33.203
-      ansible_user: vagrant
+      ansible_host: 192.168.1.203
+      ansible_user: hieunv
   children:
     k8s_master:
       hosts:

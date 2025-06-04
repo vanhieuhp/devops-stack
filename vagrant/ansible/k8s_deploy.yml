@@ -1,0 +1,115 @@
+---
+# This playbook automates the setup of a Kubernetes cluster using kubeadm
+# It includes both master and worker node configurations
+
+- name: Reset K8s Node
+  hosts: all # Run only on master node
+  become: true
+  tags:
+  - reset
+  tasks:
+  # Reset any previous Kubernetes configuration
+  - name: Reset kubeadm
+    command: kubeadm reset -f
+    tags:
+    - reset
+
+  - name: Remove etcd data
+    file:
+      path: /var/lib/etcd
+      state: absent
+    tags:
+    - reset
+
+  - name: Remove kubernetes manifests
+    file:
+      path: /etc/kubernetes/manifests
+      state: absent
+    tags:
+    - reset
+
+- name: Initialize Kubernetes Master
+  hosts: k8s_master # Run only on master node
+  become: true
+  vars:
+    k8s_master_ip: "{{ lookup('ini', 'K8S_MASTER_IP type=properties file=.env') }}"
+  tags:
+  - master
+
+
+   # Initialize the control plane
+  tasks:
+  - name: Initialize Kubernetes cluster
+    command: >
+      kubeadm init --apiserver-advertise-address={{ k8s_master_ip }} --pod-network-cidr=10.244.0.0/16
+    register: kubeadm_init
+    tags:
+    - master
+    - init
+
+  # Configure kubectl for the user
+  - name: Create .kube directory
+    file:
+      path: "/home/{{ ansible_user }}/.kube"
+      state: directory
+      owner: "{{ ansible_user }}"
+      group: "{{ ansible_user }}"
+    tags:
+    - master
+    - config
+
+  - name: Copy admin.conf to user's kube config
+    copy:
+      src: /etc/kubernetes/admin.conf
+      dest: "/home/{{ ansible_user }}/.kube/config"
+      remote_src: yes
+      owner: "{{ ansible_user }}"
+      group: "{{ ansible_user }}"
+    tags:
+    - master
+    - config
+
+  # Install Calico network plugin
+  - name: Install Calico CNI
+    command: kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/calico.yaml --validate=false
+    become: false # Run as normal user
+    tags:
+    - master
+    - network
+    - cni
+
+  # Get join command for worker nodes
+  - name: Get kubeadm join command with dynamic API server IP
+    shell: |
+      kubeadm token create --print-join-command | \
+      sed "s|kubeadm join [0-9.]*:[0-9]*|kubeadm join {{ k8s_master_ip }}:6443|"
+    register: join_command
+    changed_when: false
+    delegate_to: "{{ groups['k8s_master'][0] }}"
+    run_once: true
+    environment:
+      KUBECONFIG: /etc/kubernetes/admin.conf
+    tags:
+    - master
+    - token
+
+  # Save join command for worker nodes
+  - name: Store join command
+    set_fact:
+      join_command: "{{ hostvars[groups['k8s_master'][0]]['join_command'].stdout }}"
+    tags:
+    - master
+    - token
+
+- name: Join Worker Nodes
+  hosts: k8s_workers
+  become: true
+  tasks:
+  - name: Join cluster
+    command: "{{ hostvars[groups['k8s_master'][0]]['join_command'] }}"
+    register: join_worker
+    args:
+      creates: /etc/kubernetes/kubelet.conf
+    tags:
+    - workers
+

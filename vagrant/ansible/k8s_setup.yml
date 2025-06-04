@@ -147,7 +147,7 @@
       curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key | \
       gpg --dearmor | \
       tee /etc/apt/keyrings/kubernetes-apt-keyring.gpg > /dev/null
-    become: yes  # when: not k8s_gpg_key_check.stat.exists
+    become: yes # when: not k8s_gpg_key_check.stat.exists
     args:
       creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 
@@ -233,7 +233,7 @@
   # Initialize the control plane
   - name: Initialize Kubernetes cluster
     command: >
-      kubeadm init --apiserver-advertise-address={{ k8s_master_ip }} --pod-network-cidr=10.244.0.0/16
+      kubeadm init --apiserver-advertise-address={{ k8s_master_ip }} 
     register: kubeadm_init
     tags:
     - master
@@ -263,7 +263,7 @@
 
   # Install Calico network plugin
   - name: Install Calico CNI
-    command: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+    command: kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/calico.yaml
     become: false # Run as normal user
     tags:
     - master

@@ -9,10 +9,19 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - rancher_data:/var/lib/rancher
-    # environment:
-    #   - CATTLE_BOOTSTRAP_PASSWORD=admin
+      - ./rancher_data:/var/lib/rancher
+      - ./rancher_certs/cert.pem:/etc/rancher/ssl/cert.pem
+      - ./rancher_certs/key.pem:/etc/rancher/ssl/key.pem
+    command:
+      - --https-listen-port
+      - "443"
+      - --no-cacerts
     privileged: true
+    networks:
+      - rancher
 
-volumes:
-  rancher_data:
+networks:
+  rancher:
+    driver: bridge
+
+    

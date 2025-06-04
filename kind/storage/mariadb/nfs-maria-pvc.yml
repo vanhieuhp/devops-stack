@@ -1,27 +1,74 @@
 apiVersion: v1
 kind: PersistentVolume
-metadata: 
-  name: nfs-pv
-spec: 
-  capacity: 
-    storage: 5Gi
-  accessModes: 
+metadata:
+  name: nfs-pv-mariadb
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes:
   - ReadWriteMany
-  nfs: 
-    path: /data/mariadb
+  nfs:
+    path: /nfs/share/mariadb
     server: 192.111.33.102
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: nfs-storage 
+  storageClassName: nfs-storage
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: nfs-pvc
+  name: nfs-pvc-mariadb
   namespace: ecommerce
 spec:
   resources:
     requests:
-      storage: 5Gi
+      storage: 20Gi
   accessModes:
-    - ReadWriteMany
+  - ReadWriteMany
   storageClassName: nfs-storage
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mariadb
+  namespace: ecommerce
+spec:
+  serviceName: mariadb-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mariadb
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      securityContext:
+        fsGroup: 65534
+      containers:
+      - name: mariadb
+        image: mariadb:latest
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "devopseduvn"
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mariadb-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mariadb-storage
+        persistentVolumeClaim:
+          claimName: nfs-pvc-mariadb
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb-server
+spec:
+  selector:
+    app: mariadb
+  ports:
+  - port: 3306
+    targetPort: 3306
+  type: LoadBalancer
