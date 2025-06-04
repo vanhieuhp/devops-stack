@@ -1,0 +1,125 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-pv-mysql
+spec:
+  capacity:
+    storage: 20Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs-storage
+  nfs:
+    path: /nfs/share/mysql
+    server: 192.168.1.37
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs-pvc-mysql
+  namespace: architecture
+spec:
+  resources:
+    requests:
+      storage: 20Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteMany
+  storageClassName: nfs-storage
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-secret
+  namespace: architecture
+type: Opaque
+stringData:
+  MYSQL_ROOT_PASSWORD: password # password
+  MYSQL_DATABASE: theschool # theschool
+  MYSQL_USER: theschool # theschool
+  MYSQL_PASSWORD: password # password
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql-server
+  namespace: architecture
+spec:
+  serviceName: mysql-server
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-server
+  template:
+    metadata:
+      labels:
+        app: mysql-server
+    spec:
+      # securityContext:
+      #   fsGroup: 65534
+      containers:
+      - name: mysql-server
+        image: mysql:8.0-bookworm
+        resources:
+          limits:
+            memory: "512Mi" # Increased for better performance
+            cpu: "500m"
+          requests:
+            memory: "256Mi" # Added requests for better resource management
+            cpu: "250m"
+        ports:
+        - containerPort: 3306
+          name: mysql-port
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_ROOT_PASSWORD
+        - name: MYSQL_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_DATABASE
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_USER
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_PASSWORD
+        volumeMounts:
+        - name: mysql-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-storage
+        persistentVolumeClaim:
+          claimName: nfs-pvc-mysql
+  # volumeClaimTemplates:
+  # - metadata:
+  #     name: mysql-storage
+  #   spec:
+  #     accessModes:
+  #     - ReadWriteMany
+  #     resources:
+  #       requests:
+  #         storage: 20Gi
+  #     storageClassName: nfs-storage
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-service
+  namespace: architecture
+spec:
+  selector:
+    app: mysql-server
+  ports:
+  - port: 3306
+    targetPort: 3306
+    name: mysql-port
+  type: LoadBalancer

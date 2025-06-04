@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-monitoring
+spec:
+  capacity:
+    storage: 20Gi
+  # volumeMode: Filesystem
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs-storage
+  # mountOptions:
+  # - hard
+  # - nfsvers=4.1
+  nfs:
+    path: /nfs/share/monitoring
+    server: 192.168.1.37
+
+# ---
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: nfs-monitoring-pvc
+#   namespace: monitoring
+# spec:
+#   storageClassName: nfs-storage
+#   accessModes:
+#   - ReadWriteMany
+#   resources:
+#     requests:
+#       storage: 10Gi

@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cms-account-app-deployment
+  namespace: the-school
+spec:
+  selector:
+    matchLabels:
+      app: cms-account-app
+  template:
+    metadata:
+      labels:
+        app: cms-account-app
+    spec:
+      containers:
+      - name: cms-account-app
+        image: cms-account-service:dev-59
+        resources:
+          limits:
+            memory: "500Mi"
+            cpu: "500m"
+          requests:
+            memory: "250Mi"
+            cpu: "250m"
+        ports:
+        - containerPort: 8061
+          name: cms-app-port
+        envFrom:
+        - secretRef:
+            name: cms-account-app-database-connection
+      imagePullSecrets:
+      - name: ecr-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cms-account-app-service
+  namespace: the-school
+spec:
+  selector:
+    app: cms-account-app
+  ports:
+  - port: 8061
+    targetPort: 8061
+    name: cms-app-port
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cms-account-app-database-connection
+  namespace: the-school
+type: Opaque
+stringData:
+  DATABASE_ADDRESS: mysql-service.architecture.svc.cluster.local
+  DATABASE_NAME: theschool
+  DATABASE_USERNAME: root
+  DATABASE_PASSWORD: password
+  SERVICE_AUTH_URL: https://sso-dev.mfacilities.net
+  REDIS_URL: redis://:the-school@redis-sentinel-node-2.redis-sentinel-headless.architecture.svc.cluster.local:6379

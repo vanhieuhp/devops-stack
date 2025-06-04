@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: redis-nginx
+  namespace: architecture
+  labels:
+    name: redis-nginx
+spec:
+  containers:
+  - name: redis-nginx
+    image: nginx:alpine
+    resources:
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+    ports:
+    - containerPort: 80

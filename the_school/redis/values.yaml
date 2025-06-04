@@ -1,0 +1,22 @@
+architecture: replication
+
+auth:
+  enabled: true
+  password: "the-school"
+
+master:
+  persistence:
+    enabled: true
+    existingClaim: nfs-redis-pvc
+    size: 3Gi
+
+replica:
+  replicaCount: 3
+  persistence:
+    enabled: true
+    existingClaim: nfs-redis-pvc
+    size: 3Gi
+
+sentinel:
+  enabled: true
+  replicas: 3
