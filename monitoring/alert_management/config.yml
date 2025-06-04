@@ -1,24 +1,28 @@
 global:
   # the smarthost and SMTP sender used for mail notifications.
   smtp_smarthost: 'smtp.gmail.com:587'
-  smtp_from: 'hieu.nguyenvan.dev10@gmail.com'
+  smtp_from: 'example@gmail.com'
   # SMTP authentication credentials
-  smtp_auth_username: 'hieu.nguyenvan.dev10@gmail.com'
-  smtp_auth_password: 'talwzhajdiwhmuwu'
-
+  smtp_auth_username: 'example@gmail.com'
+  smtp_auth_password: 'password'
+#  smtp_require_tls: false
 route:
-  receiver: 'main_receiver'
-
-  routes:
-  - receiver: 'urgent_receiver'
-    matchers:
-      - severity="Critical"
+  receiver: 'email'
+  group_by: ['alertname', 'instance']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  # routes:
+  # - receiver: 'urgent_receiver'
+  #   matchers:
+  #     - severity="Critical"
 
 receivers:
-- name: 'main_receiver'
-  email_configs:
-  - to: 'vanhieuit10@gmail.com'
+  - name: 'email'
+    email_configs:
+      - to: 'example@gmail.com'
+        send_resolved: true
 
-- name: 'urgent_receiver'
-  email_configs:
-  - to: 'vanhieuit10@gmail.com'
+  - name: 'urgent_receiver'
+    email_configs:
+      - to: 'example@gmail.com'

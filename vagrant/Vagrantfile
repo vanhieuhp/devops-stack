@@ -11,7 +11,7 @@ Vagrant.configure("2") do |config|
     master.vm.provider "virtualbox" do |vb|
       vb.name = "Ubuntu-master"
       vb.memory = "2048"
-      vb.cpus = 1
+      vb.cpus = 2
     end
 
     master.vm.provision "shell", inline: <<-SHELL
@@ -30,8 +30,8 @@ Vagrant.configure("2") do |config|
 
     worker1.vm.provider "virtualbox" do |vb|
       vb.name = "Ubuntu-worker1"
-      vb.memory = "2048"
-      vb.cpus = 1
+      vb.memory = "4096"
+      vb.cpus = 4
     end
 
     worker1.vm.provision "shell", inline: <<-SHELL
@@ -49,20 +49,23 @@ Vagrant.configure("2") do |config|
 
     worker2.vm.provider "virtualbox" do |vb|
       vb.name = "Ubuntu-worker2"
+      vb.memory = "4096"
+      vb.cpus = 4
+    end
+  end
+
+  config.vm.define "worker3" do |worker3|
+    worker3.vm.box = "ubuntu/jammy64"
+    worker3.vm.hostname = "worker3"
+    worker3.vm.network "public_network",
+      ip: "192.168.1.204",
+      bridge: "wlp2s0"
+
+    worker3.vm.provider "virtualbox" do |vb|
+      vb.name = "Ubuntu-worker3"
       vb.memory = "2048"
       vb.cpus = 1
     end
-
-    # grafana.vm.provision "shell", inline: <<-SHELL
-    #   sudo apt-get update
-    #   sudo apt-get install -y apt-transport-https software-properties-common wget
-    #   wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add -
-    #   echo "deb https://packages.grafana.com/oss/deb stable main" | sudo tee /etc/apt/sources.list.d/grafana.list
-    #   sudo apt-get update
-    #   sudo apt-get install -y grafana
-    #   sudo systemctl enable grafana-server
-    #   sudo systemctl start grafana-server
-    # SHELL
   end
 
 end
