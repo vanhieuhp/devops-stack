@@ -22,35 +22,35 @@ services:
     networks:
       - external_network
 
-  node_exporter:
-    image: prom/node-exporter:v1.9.1
-    container_name: node_exporter
-    ports:
-      - 9100:9100
-    volumes:
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /:/rootfs:ro
-    command:
-      - '--path.rootfs=/rootfs'
-      - '--path.procfs=/host/proc' 
-      - '--path.sysfs=/host/sys'
-      - --collector.filesystem.ignored-mount-points
-      - "^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)"
-    restart: unless-stopped
-    networks:
-      - external_network
+  # node_exporter:
+  #   image: prom/node-exporter:v1.9.1
+  #   container_name: node_exporter
+  #   ports:
+  #     - 9100:9100
+  #   volumes:
+  #     - /proc:/host/proc:ro
+  #     - /sys:/host/sys:ro
+  #     - /:/rootfs:ro
+  #   command:
+  #     - '--path.rootfs=/rootfs'
+  #     - '--path.procfs=/host/proc' 
+  #     - '--path.sysfs=/host/sys'
+  #     - --collector.filesystem.ignored-mount-points
+  #     - "^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)"
+  #   restart: unless-stopped
+  #   networks:
+  #     - external_network
 
-  shoehub:
-    image: aussiearef/shoehub:latest
-    container_name: shoehub
-    ports:
-      - 8080:8080
-    environment:
-      - JAVA_OPTS=-Xmx512m
-    restart: unless-stopped
-    networks:
-      - external_network
+  # shoehub:
+  #   image: aussiearef/shoehub:latest
+  #   container_name: shoehub
+  #   ports:
+  #     - 8080:8080
+  #   environment:
+  #     - JAVA_OPTS=-Xmx512m
+  #   restart: unless-stopped
+  #   networks:
+  #     - external_network
 
   grafana:
     image: grafana/grafana:12.0.1
@@ -61,6 +61,7 @@ services:
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana/grafana.ini:/etc/grafana/grafana.ini
+      - ./grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
       # - ./grafana/provisioning/:/etc/grafana/provisioning/
     env_file:
       - ./grafana/.grafana.env
@@ -69,34 +70,65 @@ services:
     networks:
       - external_network
   
-  loki:
-    image: grafana/loki:3.5
-    container_name: loki
-    ports:
-      - "3100:3100"
-    volumes:
-      - ./loki/loki-config.yaml:/etc/loki/loki-config.yaml
-    command: -config.file=/etc/loki/loki-config.yaml
-    restart: unless-stopped
-    networks:
-      - external_network
+#  loki:
+#    image: grafana/loki:3.5
+#    container_name: loki
+#    ports:
+#      - "3100:3100"
+#    volumes:
+#      - ./loki/loki-config.yaml:/etc/loki/loki-config.yaml
+#    command: -config.file=/etc/loki/loki-config.yaml
+#    restart: unless-stopped
+#    networks:
+#      - external_network
 
-  promtail:
-    image: grafana/promtail:3.5-amd64
-    container_name: promtail
-    volumes:
-      - ./promtail/promtail-config.yaml:/etc/promtail/config.yml
-      - ./log:/var/log
-    command: -config.file=/etc/promtail/config.yml
+#  promtail:
+#    image: grafana/promtail:3.5-amd64
+#    container_name: promtail
+#    volumes:
+#      - ./promtail/promtail-config.yaml:/etc/promtail/config.yml
+#      - ./log:/var/log
+#    command: -config.file=/etc/promtail/config.yml
     # healthcheck:
     #   test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9080/ready"]
     #   interval: 10s
     #   timeout: 5s
     #   retries: 3
-    restart: unless-stopped
+#    restart: unless-stopped
+#    networks:
+#      - external_network
+  # otel-collector:
+  #   image: otel/opentelemetry-collector-contrib:0.127.0
+  #   container_name: otel
+  #   volumes:
+  #     - ./otel_collector/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
+  #   ports:
+  #     - 1888:1888 # pprof extension
+  #     - 8888:8888 # Prometheus metrics exposed by the Collector
+  #     - 8889:8889 # Prometheus exporter metrics
+  #     - 13133:13133 # health_check extension
+  #     - 4317:4317 # OTLP gRPC receiver
+  #     - 4318:4318 # OTLP http receiver
+  #     - 55679:55679 # zpages extension
+  #   restart: unless-stopped
+  #   networks:
+  #     - external_network
+
+  tempo:
+    image: grafana/tempo:main-cdc488d
+    container_name: tempo
+    command: -config.file /etc/tempo-config.yml
+    ports:
+      - "3100:3100" 
+      - "4317:4317"
+    volumes:
+      - ./tempo/tempo.yml:/etc/tempo-config.yml
     networks:
       - external_network
-
+    restart: unless-stopped
+    mem_limit: 512m
+    mem_reservation: 128M
+    cpus: 0.25
 
 networks:
   external_network:
@@ -105,5 +137,7 @@ networks:
 
 
 volumes:
-  prometheus_data: {}
-  grafana_data: {}
+  prometheus_data: 
+    name: prometheus_data
+  grafana_data: 
+    name: grafana_data

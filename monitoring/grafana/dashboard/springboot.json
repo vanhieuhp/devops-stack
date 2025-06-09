@@ -1,0 +1,247 @@
+{
+    "annotations": {
+      "list": []
+    },
+    "editable": true,
+    "gnetId": null,
+    "graphTooltip": 0,
+    "links": [],
+    "panels": [
+      {
+        "datasource": "Prometheus",
+        "fieldConfig": {
+          "defaults": {
+            "unit": "ms"
+          }
+        },
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+        "id": 1,
+        "targets": [
+          {
+            "expr": "springboot_application_ready_time_milliseconds{job=\"otel-collector-springboot\", application=\"accounts\"}",
+            "legendFormat": "Ready Time",
+            "refId": "A"
+          },
+          {
+            "expr": "springboot_application_started_time_milliseconds{job=\"otel-collector-springboot\", application=\"accounts\"}",
+            "legendFormat": "Started Time",
+            "refId": "B"
+          }
+        ],
+        "title": "Application Startup Time",
+        "type": "stat"
+      },
+      {
+        "datasource": "Prometheus",
+        "fieldConfig": {
+          "defaults": {
+            "unit": "none"
+          }
+        },
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+        "id": 2,
+        "legend": {
+          "show": true,
+          "values": true
+        },
+        "targets": [
+          {
+            "expr": "springboot_hikaricp_connections{job=\"otel-collector-springboot\", pool=\"HikariPool-1\"}",
+            "legendFormat": "Total {{pool}}",
+            "refId": "A"
+          },
+          {
+            "expr": "springboot_hikaricp_connections_active{job=\"otel-collector-springboot\", pool=\"HikariPool-1\"}",
+            "legendFormat": "Active {{pool}}",
+            "refId": "B"
+          },
+          {
+            "expr": "springboot_hikaricp_connections_idle{job=\"otel-collector-springboot\", pool=\"HikariPool-1\"}",
+            "legendFormat": "Idle {{pool}}",
+            "refId": "C"
+          },
+          {
+            "expr": "springboot_hikaricp_connections_max{job=\"otel-collector-springboot\", pool=\"HikariPool-1\"}",
+            "legendFormat": "Max {{pool}}",
+            "refId": "D"
+          },
+          {
+            "expr": "springboot_hikaricp_connections_min{job=\"otel-collector-springboot\", pool=\"HikariPool-1\"}",
+            "legendFormat": "Min {{pool}}",
+            "refId": "E"
+          }
+        ],
+        "title": "HikariCP Connection Pool Status",
+        "type": "timeseries"
+      },
+      {
+        "datasource": "Prometheus",
+        "fieldConfig": {
+          "defaults": {
+            "unit": "ms"
+          }
+        },
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+        "id": 3,
+        "legend": {
+          "show": true,
+          "values": true
+        },
+        "targets": [
+          {
+            "expr": "rate(springboot_hikaricp_connections_acquire_milliseconds_sum{job=\"otel-collector-springboot\", pool=\"HikariPool-1\"}[5m]) / rate(springboot_hikaricp_connections_acquire_milliseconds_count{job=\"otel-collector-springboot\", pool=\"HikariPool-1\"}[5m])",
+            "legendFormat": "Acquire Time {{pool}}",
+            "refId": "A"
+          },
+          {
+            "expr": "rate(springboot_hikaricp_connections_usage_milliseconds_sum{job=\"otel-collector-springboot\", pool=\"HikariPool-1\"}[5m]) / rate(springboot_hikaricp_connections_usage_milliseconds_count{job=\"otel-collector-springboot\", pool=\"HikariPool-1\"}[5m])",
+            "legendFormat": "Usage Time {{pool}}",
+            "refId": "B"
+          }
+        ],
+        "title": "HikariCP Connection Times",
+        "type": "timeseries"
+      },
+      {
+        "datasource": "Prometheus",
+        "fieldConfig": {
+          "defaults": {
+            "unit": "bytes"
+          }
+        },
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+        "id": 4,
+        "legend": {
+          "show": true,
+          "values": true
+        },
+        "targets": [
+          {
+            "expr": "springboot_jvm_memory_used_bytes{job=\"otel-collector-springboot\", area=\"heap\"} / 1024 / 1024",
+            "legendFormat": "{{id}}",
+            "refId": "A"
+          }
+        ],
+        "title": "JVM Heap Memory Usage",
+        "type": "timeseries"
+      },
+      {
+        "datasource": "Prometheus",
+        "fieldConfig": {
+          "defaults": {
+            "unit": "ms"
+          }
+        },
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+        "id": 5,
+        "legend": {
+          "show": true,
+          "values": true
+        },
+        "targets": [
+          {
+            "expr": "rate(springboot_jvm_gc_concurrent_phase_time_milliseconds_sum{job=\"otel-collector-springboot\"}[5m]) / rate(springboot_jvm_gc_concurrent_phase_time_milliseconds_count{job=\"otel-collector-springboot\"}[5m])",
+            "legendFormat": "{{gc}} - {{action}}",
+            "refId": "A"
+          }
+        ],
+        "title": "JVM GC Concurrent Phase Time",
+        "type": "timeseries"
+      },
+      {
+        "datasource": "Prometheus",
+        "fieldConfig": {
+          "defaults": {
+            "unit": "none"
+          }
+        },
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+        "id": 6,
+        "legend": {
+          "show": true,
+          "values": true
+        },
+        "targets": [
+          {
+            "expr": "springboot_system_cpu_usage{job=\"otel-collector-springboot\"}",
+            "legendFormat": "CPU Usage",
+            "refId": "A"
+          },
+          {
+            "expr": "springboot_system_load_average_1m{job=\"otel-collector-springboot\"}",
+            "legendFormat": "Load Average 1m",
+            "refId": "B"
+          }
+        ],
+        "title": "System CPU and Load",
+        "type": "timeseries"
+      },
+      {
+        "datasource": "Prometheus",
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short"
+          }
+        },
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+        "id": 7,
+        "legend": {
+          "show": true,
+          "values": true
+        },
+        "targets": [
+          {
+            "expr": "rate(springboot_logback_events_total{job=\"otel-collector-springboot\"}[5m])",
+            "legendFormat": "{{level}}",
+            "refId": "A"
+          }
+        ],
+        "title": "Log Events Rate",
+        "type": "timeseries"
+      },
+      {
+        "datasource": "Prometheus",
+        "fieldConfig": {
+          "defaults": {
+            "unit": "none"
+          }
+        },
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+        "id": 8,
+        "legend": {
+          "show": true,
+          "values": true
+        },
+        "targets": [
+          {
+            "expr": "springboot_executor_active_threads{job=\"otel-collector-springboot\", name=\"applicationTaskExecutor\"}",
+            "legendFormat": "Active Threads",
+            "refId": "A"
+          },
+          {
+            "expr": "springboot_executor_queued_tasks{job=\"otel-collector-springboot\", name=\"applicationTaskExecutor\"}",
+            "legendFormat": "Queued Tasks",
+            "refId": "B"
+          }
+        ],
+        "title": "Executor Thread Pool",
+        "type": "timeseries"
+      }
+    ],
+    "refresh": "30s",
+    "schemaVersion": 36,
+    "style": "dark",
+    "tags": ["spring-boot", "accounts", "metrics"],
+    "templating": {
+      "list": []
+    },
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "",
+    "title": "Spring Boot Accounts Metrics Dashboard",
+    "uid": "spring-boot-accounts-metrics",
+    "version": 1
+  }

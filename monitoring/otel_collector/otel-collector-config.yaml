@@ -1,0 +1,65 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+  # prometheus:
+  #   config:
+  #     scrape_configs:
+  #     - job_name: 'java-application'
+  #       static_configs:
+  #       - targets: [ '192.168.1.97:8001' ]
+  #       metrics_path: '/actuator/metrics'
+
+processors:
+  batch:
+    timeout: 1s
+    send_batch_size: 1000
+  attributes:
+    actions:
+    - key: service.name
+      value: springboot
+      action: insert
+    - key: service.namespace
+      value: the-school
+      action: insert
+    - key: service.version
+      value: 1.0.0
+      action: insert
+    - key: service.instance.id
+      value: 1
+      action: insert
+
+exporters:
+  debug:
+    verbosity: detailed
+    sampling_initial: 10
+    sampling_thereafter: 100
+  # otlp:
+  #   endpoint: "0.0.0.0:4317"
+  #   tls:
+  #     insecure: true
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    namespace: "springboot"
+  # prometheus:
+  #   endpoint: "0.0.0.0:8889"
+  #   namespace: "springboot"
+
+service:
+  pipelines:
+    # traces:
+    #   receivers: [ otlp ]
+    #   processors: [ batch ]
+    #   exporters: [ otlp ]
+    metrics:
+      receivers: [ otlp ]
+      processors: [ attributes, batch ]
+      exporters: [ debug, prometheus ]
+      # logs:
+      # Add this logs pipeline
+      # receivers: [ otlp ]
+      # processors: [ batch ]
+      # exporters: [ otlp ]
